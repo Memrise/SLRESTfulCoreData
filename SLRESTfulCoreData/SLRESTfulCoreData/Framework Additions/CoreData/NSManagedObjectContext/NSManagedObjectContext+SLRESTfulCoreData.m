@@ -115,12 +115,12 @@ static id managedObjectCollector(id objectIDs, NSManagedObjectContext *context)
 {
     NSParameterAssert(block);
 
-    object = managedObjectIDCollector(object);
+    NSArray *objectIdentifiers = managedObjectIDCollector(object);
 
     [self performBlock:^{
-        block(managedObjectCollector(object, self));
+        block(objectIdentifiers);
     }];
-
+    
 }
 
 @end

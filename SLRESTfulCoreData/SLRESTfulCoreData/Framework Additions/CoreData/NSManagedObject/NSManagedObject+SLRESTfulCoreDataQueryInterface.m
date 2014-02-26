@@ -283,7 +283,15 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
     return YES;
 }
 
++ (void)fetchObjectFromURL:(NSURL *)URL completionHandler:(void (^)(id, NSError *))completionHandler
+{
+    [self fetchObjectFromURL:URL
+    returnAsObjectIdentifier:NO
+           completionHandler:completionHandler];
+}
+
 + (void)fetchObjectFromURL:(NSURL *)URL
+  returnAsObjectIdentifier:(BOOL) returnAsObjectIdentifiers
          completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler
 {
     NSString *jsonPrefix = [self objectDescription].jsonPrefix;
@@ -297,7 +305,7 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
         }];
     }
 
-    [self fetchObjectsFromURL:URL deleteEveryOtherObject:NO completionHandler:^(NSArray *fetchedObjects, NSError *error) {
+    [self fetchObjectsFromURL:URL deleteEveryOtherObject:NO returnAsObjectIdentifiers:returnAsObjectIdentifiers completionHandler:^(NSArray *fetchedObjects, NSError *error) {
         if (!completionHandler) {
             return;
         }
@@ -369,25 +377,22 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
 
          [backgroundContext performBlock:^{
              
-             void(^successBlock)(NSArray *objectIdentifiers) = ^(NSArray *objects) {
+             void(^successBlock)(NSArray *objectsOrIdentifiers) = ^(NSArray *objectsOrIdentifiers) {
                  NSManagedObjectContext *mainThreadContext = [self mainThreadManagedObjectContext];
                  if (returnAsObjectIdentifiers) {
-                     [mainThreadContext performBlock:^(NSArray *objectIdentifiers) {
+                     [mainThreadContext performBlock:^(id object) {
                          [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                          if (completionHandler) {
-                             completionHandler(objectIdentifiers, nil);
+                             completionHandler(objectsOrIdentifiers, nil);
                          }
-                     } withObjectsForIdentifiers:objects];
-
-                     [mainThreadContext performBlock:^{
-                     }];
+                     } withObjectsForIdentifiers:objectsOrIdentifiers];
                  } else {
                      [mainThreadContext performBlock:^(NSArray *objects) {
                          [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                          if (completionHandler) {
                              completionHandler(objects, nil);
                          }
-                     } withObject:objects];
+                     } withObject:objectsOrIdentifiers];
                  }
              };
 
