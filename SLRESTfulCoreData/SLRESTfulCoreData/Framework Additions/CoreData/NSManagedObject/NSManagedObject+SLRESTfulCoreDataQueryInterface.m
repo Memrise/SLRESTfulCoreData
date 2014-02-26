@@ -369,20 +369,25 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
          
          [backgroundContext performBlock:^{
              
-             void(^successBlock)(NSArray *objectIdentifiers) = ^(NSArray *objectIdentifiers) {
+             void(^successBlock)(NSArray *objectIdentifiers) = ^(NSArray *objects) {
                  NSManagedObjectContext *mainThreadContext = [self mainThreadManagedObjectContext];
                  if (returnAsObjectIdentifiers) {
-                     [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
-                     if (completionHandler) {
-                         completionHandler(objectIdentifiers, nil);
-                     }
+                     [mainThreadContext performBlock:^(NSArray *objectIdentifiers) {
+                         [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
+                         if (completionHandler) {
+                             completionHandler(objectIdentifiers, nil);
+                         }
+                     } withObjectsForIdentifiers:objects];
+
+                     [mainThreadContext performBlock:^{
+                     }];
                  } else {
                      [mainThreadContext performBlock:^(NSArray *objects) {
                          [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                          if (completionHandler) {
                              completionHandler(objects, nil);
                          }
-                     } withObject:objectIdentifiers];
+                     } withObject:objects];
                  }
              };
              
