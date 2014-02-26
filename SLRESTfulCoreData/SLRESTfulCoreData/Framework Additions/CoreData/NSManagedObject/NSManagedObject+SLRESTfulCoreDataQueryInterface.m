@@ -380,10 +380,10 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
              void(^successBlock)(NSArray *objectsOrIdentifiers) = ^(NSArray *objectsOrIdentifiers) {
                  NSManagedObjectContext *mainThreadContext = [self mainThreadManagedObjectContext];
                  if (returnAsObjectIdentifiers) {
-                     [mainThreadContext performBlock:^(id object) {
+                     [mainThreadContext performBlock:^(NSArray *objectIdentifiers) {
                          [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                          if (completionHandler) {
-                             completionHandler(objectsOrIdentifiers, nil);
+                             completionHandler(objectIdentifiers, nil);
                          }
                      } withObjectsForIdentifiers:objectsOrIdentifiers];
                  } else {
