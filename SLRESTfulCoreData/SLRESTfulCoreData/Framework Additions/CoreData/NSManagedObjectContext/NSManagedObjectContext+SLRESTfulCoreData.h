@@ -37,4 +37,6 @@
  */
 - (void)performBlock:(void (^)(id object))block withObject:(id)object;
 
+- (void)performBlock:(void (^)(id object))block withObjectsForIdentifiers:(id)object;
+
 @end

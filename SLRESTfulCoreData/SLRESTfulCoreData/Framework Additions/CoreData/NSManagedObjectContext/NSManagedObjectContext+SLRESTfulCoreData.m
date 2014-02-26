@@ -111,4 +111,16 @@ static id managedObjectCollector(id objectIDs, NSManagedObjectContext *context)
     [self __SLRESTfulCoreDataPerformBlock:block withObjectIDs:managedObjectIDCollector(object)];
 }
 
+- (void)performBlock:(void (^)(id object))block withObjectsForIdentifiers:(id)object
+{
+    NSParameterAssert(block);
+
+    object = managedObjectIDCollector(object);
+
+    [self performBlock:^{
+        block(managedObjectCollector(object, self));
+    }];
+
+}
+
 @end
