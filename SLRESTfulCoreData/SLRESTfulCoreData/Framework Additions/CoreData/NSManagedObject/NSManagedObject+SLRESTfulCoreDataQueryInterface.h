@@ -51,6 +51,11 @@
      deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
           completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler;
 
++ (void)fetchObjectsFromURL:(NSURL *)URL
+     deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
+  returnAsObjectIdentifiers:(BOOL) returnAsObjectIdentifiers
+          completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler;
+
 /**
  Calls -[NSManagedObject fetchObjectsForRelationship:relationship fromURL:URL deleteEveryOtherObject:YES completionHandler:completionHandler].
  */

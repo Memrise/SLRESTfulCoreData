@@ -316,11 +316,23 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
 {
     [self fetchObjectsFromURL:URL
        deleteEveryOtherObject:YES
+    returnAsObjectIdentifiers:NO
             completionHandler:completionHandler];
 }
 
 + (void)fetchObjectsFromURL:(NSURL *)URL
      deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
+          completionHandler:(void (^)(NSArray *, NSError *))completionHandler
+{
+    [self fetchObjectsFromURL:URL
+       deleteEveryOtherObject:deleteEveryOtherObject
+    returnAsObjectIdentifiers:NO
+            completionHandler:completionHandler];
+}
+
++ (void)fetchObjectsFromURL:(NSURL *)URL
+     deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
+  returnAsObjectIdentifiers:(BOOL) returnAsObjectIdentifiers
           completionHandler:(void (^)(NSArray *, NSError *))completionHandler
 {
     // send request to given URL
@@ -357,14 +369,21 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
          
          [backgroundContext performBlock:^{
              
-             void(^successBlock)(NSArray *objects) = ^(NSArray *objects) {
+             void(^successBlock)(NSArray *objectIdentifiers) = ^(NSArray *objectIdentifiers) {
                  NSManagedObjectContext *mainThreadContext = [self mainThreadManagedObjectContext];
-                 [mainThreadContext performBlock:^(NSArray *objects) {
+                 if (returnAsObjectIdentifiers) {
                      [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                      if (completionHandler) {
-                         completionHandler(objects, nil);
+                         completionHandler(objectIdentifiers, nil);
                      }
-                 } withObject:objects];
+                 } else {
+                     [mainThreadContext performBlock:^(NSArray *objects) {
+                         [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
+                         if (completionHandler) {
+                             completionHandler(objects, nil);
+                         }
+                     } withObject:objectIdentifiers];
+                 }
              };
              
              void(^failureBlock)(NSError *error) = ^(NSError *error) {
