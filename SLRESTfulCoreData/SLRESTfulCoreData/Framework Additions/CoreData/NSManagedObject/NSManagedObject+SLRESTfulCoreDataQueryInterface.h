@@ -34,6 +34,10 @@
  Fetches a single object.
  */
 + (void)fetchObjectFromURL:(NSURL *)URL
+  returnAsObjectIdentifier:(BOOL) returnAsObjectIdentifiers
+         completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler;
+
++ (void)fetchObjectFromURL:(NSURL *)URL
          completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler;
 
 /**
