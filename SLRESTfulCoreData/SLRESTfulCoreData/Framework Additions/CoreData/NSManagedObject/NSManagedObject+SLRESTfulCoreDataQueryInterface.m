@@ -283,14 +283,15 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
     return YES;
 }
 
-+ (void)fetchObjectFromURL:(NSURL *)URL completionHandler:(void (^)(id, NSError *))completionHandler
-{
-    [self fetchObjectFromURL:URL
-    returnAsObjectIdentifier:NO
-           completionHandler:completionHandler];
++ (void)fetchObjectFromURL:(NSURL *)URL completionHandler:(void (^)(id, NSError *))completionHandler {
+  [self fetchObjectFromURL:URL
+         backgroundContext:nil
+  returnAsObjectIdentifier:NO
+         completionHandler:completionHandler];
 }
 
 + (void)fetchObjectFromURL:(NSURL *)URL
+         backgroundContext:(NSManagedObjectContext*)backgroundContext
   returnAsObjectIdentifier:(BOOL) returnAsObjectIdentifiers
          completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler
 {
@@ -305,7 +306,8 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
         }];
     }
 
-    [self fetchObjectsFromURL:URL deleteEveryOtherObject:NO returnAsObjectIdentifiers:returnAsObjectIdentifiers completionHandler:^(NSArray *fetchedObjects, NSError *error) {
+    [self fetchObjectsFromURL:URL backgroundContext:backgroundContext deleteEveryOtherObject:NO returnAsObjectIdentifiers:returnAsObjectIdentifiers completionHandler:^
+(NSArray *fetchedObjects, NSError *error) {
         if (!completionHandler) {
             return;
         }
@@ -323,7 +325,8 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
           completionHandler:(void(^)(NSArray *fetchedObjects, NSError *error))completionHandler
 {
     [self fetchObjectsFromURL:URL
-       deleteEveryOtherObject:YES
+            backgroundContext:nil
+       deleteEveryOtherObject:NO
     returnAsObjectIdentifiers:NO
             completionHandler:completionHandler];
 }
@@ -333,15 +336,17 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
           completionHandler:(void (^)(NSArray *, NSError *))completionHandler
 {
     [self fetchObjectsFromURL:URL
+            backgroundContext:nil
        deleteEveryOtherObject:deleteEveryOtherObject
     returnAsObjectIdentifiers:NO
             completionHandler:completionHandler];
 }
 
 + (void)fetchObjectsFromURL:(NSURL *)URL
+          backgroundContext:(NSManagedObjectContext*)optionalContext
      deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
   returnAsObjectIdentifiers:(BOOL) returnAsObjectIdentifiers
-          completionHandler:(void (^)(NSArray *, NSError *))completionHandler
+          completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler
 {
     // send request to given URL
     [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidStartNotification object:nil];
@@ -373,8 +378,8 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
          }
 
          // success for now
-         NSManagedObjectContext *backgroundContext = [self backgroundThreadManagedObjectContext];
-
+         NSManagedObjectContext *backgroundContext = optionalContext ?: [self backgroundThreadManagedObjectContext];
+         
          [backgroundContext performBlock:^{
              
              void(^successBlock)(NSArray *objectsOrIdentifiers) = ^(NSArray *objectsOrIdentifiers) {
