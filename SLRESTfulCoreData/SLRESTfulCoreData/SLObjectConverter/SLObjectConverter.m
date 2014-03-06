@@ -356,12 +356,19 @@ static void mergeDictionaries(NSMutableDictionary *mainDictionary, NSDictionary 
     dispatch_once(&onceToken, ^{
         dateFormatters = [NSMutableDictionary dictionary];
     });
-    
-    NSDateFormatter *dateFormatter = dateFormatters[dateTimeFormat];
+
+    NSDateFormatter *dateFormatter = nil;
+    @synchronized(dateFormatters) {
+        dateFormatter = dateFormatters[dateTimeFormat];
+    }
+
     if (!dateFormatter) {
         dateFormatter = [[NSDateFormatter alloc] init];
         dateFormatter.dateFormat = dateTimeFormat;
-        dateFormatters[dateTimeFormat] = dateFormatter;
+
+        @synchronized(dateFormatters) {
+            dateFormatters[dateTimeFormat] = dateFormatter;
+        }
     }
     
     return dateFormatter;
