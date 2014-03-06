@@ -70,15 +70,10 @@
     }
 
     NSString *cachedKey = [self _cachedKeyForClass:class withRemoteIdentifier:identifier];
-    NSManagedObject *cachedManagedObject = [self.internalCache objectForKey:cachedKey];
+    id cachedManagedObject = [self.internalCache objectForKey:cachedKey];
     
     if (cachedManagedObject) {
-        if (!cachedManagedObject.managedObjectContext) {
-            [self.internalCache removeObjectForKey:cachedKey];
-            cachedManagedObject = nil;
-        } else {
-            return cachedManagedObject;
-        }
+        return cachedManagedObject;
     }
 
     NSAssert([class isSubclassOfClass:[NSManagedObject class]], @"class %@ must be a subclass of NSManagedObject", class);
