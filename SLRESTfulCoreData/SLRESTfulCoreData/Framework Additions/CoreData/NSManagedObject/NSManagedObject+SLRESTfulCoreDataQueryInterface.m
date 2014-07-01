@@ -283,16 +283,7 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
     return YES;
 }
 
-+ (void)fetchObjectFromURL:(NSURL *)URL completionHandler:(void (^)(id, NSError *))completionHandler {
-  [self fetchObjectFromURL:URL
-         backgroundContext:nil
-  returnAsObjectIdentifier:NO
-         completionHandler:completionHandler];
-}
-
 + (void)fetchObjectFromURL:(NSURL *)URL
-         backgroundContext:(NSManagedObjectContext*)backgroundContext
-  returnAsObjectIdentifier:(BOOL) returnAsObjectIdentifiers
          completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler
 {
     NSString *jsonPrefix = [self objectDescription].jsonPrefix;
@@ -306,7 +297,7 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
         }];
     }
 
-    [self fetchObjectsFromURL:URL backgroundContext:backgroundContext deleteEveryOtherObject:NO returnAsObjectIdentifiers:returnAsObjectIdentifiers completionHandler:^
+    [self fetchObjectsFromURL:URL deleteEveryOtherObject:NO completionHandler:^
 (NSArray *fetchedObjects, NSError *error) {
         if (!completionHandler) {
             return;
@@ -322,30 +313,15 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
 }
 
 + (void)fetchObjectsFromURL:(NSURL *)URL
-          completionHandler:(void(^)(NSArray *fetchedObjects, NSError *error))completionHandler
-{
-    [self fetchObjectsFromURL:URL
-            backgroundContext:nil
-       deleteEveryOtherObject:NO
-    returnAsObjectIdentifiers:NO
-            completionHandler:completionHandler];
-}
-
-+ (void)fetchObjectsFromURL:(NSURL *)URL
-     deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
           completionHandler:(void (^)(NSArray *, NSError *))completionHandler
 {
-    [self fetchObjectsFromURL:URL
-            backgroundContext:nil
-       deleteEveryOtherObject:deleteEveryOtherObject
-    returnAsObjectIdentifiers:NO
-            completionHandler:completionHandler];
+  [self fetchObjectsFromURL:URL
+     deleteEveryOtherObject:NO
+          completionHandler:completionHandler];
 }
 
 + (void)fetchObjectsFromURL:(NSURL *)URL
-          backgroundContext:(NSManagedObjectContext*)optionalContext
      deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
-  returnAsObjectIdentifiers:(BOOL) returnAsObjectIdentifiers
           completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler
 {
     // send request to given URL
@@ -378,27 +354,18 @@ static void class_swizzleSelector(Class class, SEL originalSelector, SEL newSele
          }
 
          // success for now
-         NSManagedObjectContext *backgroundContext = optionalContext ?: [self backgroundThreadManagedObjectContext];
+         NSManagedObjectContext *backgroundContext = [self backgroundThreadManagedObjectContext];
          
          [backgroundContext performBlock:^{
              
              void(^successBlock)(NSArray *objectsOrIdentifiers) = ^(NSArray *objectsOrIdentifiers) {
                  NSManagedObjectContext *mainThreadContext = [self mainThreadManagedObjectContext];
-                 if (returnAsObjectIdentifiers) {
-                     [mainThreadContext performBlock:^(NSArray *objectIdentifiers) {
-                         [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
-                         if (completionHandler) {
-                             completionHandler(objectIdentifiers, nil);
-                         }
-                     } withObjectsForIdentifiers:objectsOrIdentifiers];
-                 } else {
                      [mainThreadContext performBlock:^(NSArray *objects) {
                          [[NSNotificationCenter defaultCenter] postNotificationName:SLRESTfulCoreDataRemoteOperationDidFinishNotification object:nil];
                          if (completionHandler) {
                              completionHandler(objects, nil);
                          }
                      } withObject:objectsOrIdentifiers];
-                 }
              };
 
              void(^failureBlock)(NSError *error) = ^(NSError *error) {

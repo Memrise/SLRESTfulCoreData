@@ -34,11 +34,6 @@
  Fetches a single object.
  */
 + (void)fetchObjectFromURL:(NSURL *)URL
-         backgroundContext:(NSManagedObjectContext*)backgroundContext
-  returnAsObjectIdentifier:(BOOL) returnAsObjectIdentifiers
-         completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler;
-
-+ (void)fetchObjectFromURL:(NSURL *)URL
          completionHandler:(void(^)(id fetchedObject, NSError *error))completionHandler;
 
 /**
@@ -54,12 +49,6 @@
  */
 + (void)fetchObjectsFromURL:(NSURL *)URL
      deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
-          completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler;
-
-+ (void)fetchObjectsFromURL:(NSURL *)URL
-          backgroundContext:(NSManagedObjectContext*)backgroundContext
-     deleteEveryOtherObject:(BOOL)deleteEveryOtherObject
-  returnAsObjectIdentifiers:(BOOL) returnAsObjectIdentifiers
           completionHandler:(void (^)(NSArray *fetchedObjects, NSError *error))completionHandler;
 
 /**
