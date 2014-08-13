@@ -25,12 +25,11 @@
 
 #import "SLRESTfulCoreData.h"
 #import "AFNetworking.h"
-
-
+#import "AFOAuth2Client.h"
 
 /**
  @abstract  <#abstract comment#>
  */
-@interface AFRESTfulCoreDataBackgroundQueue : AFHTTPRequestOperationManager <SLRESTfulCoreDataBackgroundQueue>
+@interface AFRESTfulCoreDataBackgroundQueue : AFOAuth2Client <SLRESTfulCoreDataBackgroundQueue>
 
 @end
